@@ -69,6 +69,7 @@ function createWindow() {
     minWidth: 960,
     minHeight: 620,
     title: 'ScreenShare',
+    icon: path.join(__dirname, 'build', 'icon.ico'),
     backgroundColor: '#1e1f22',
     autoHideMenuBar: true,
     webPreferences: {

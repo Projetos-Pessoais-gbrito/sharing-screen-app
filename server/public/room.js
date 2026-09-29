@@ -2,7 +2,7 @@
 // Everyone can share; everyone can watch any number of streams.
 // Each stream goes directly from the sharer to each person watching it (WebRTC mesh).
 const $ = (s) => document.querySelector(s);
-const desktop = window.desktop || null; // present only inside the ScreenShare app
+const desktopApp = window.desktop || null; // present only inside the ScreenShare app
 
 const QUALITY = {
   '720p30':  { label: '720p · 30 fps',  w: 1280, h: 720,  fps: 30, kbps: 2500 },
@@ -76,8 +76,8 @@ const emitAck = (event, payload) => new Promise((resolve) => {
   $('#room').value = (params.get('room') || '').toUpperCase();
   ($('#name').value ? ($('#room').value ? $('#password') : $('#room')) : $('#name')).focus();
 
-  if (desktop) {
-    S.info = await desktop.info();
+  if (desktopApp) {
+    S.info = await desktopApp.info();
     $('#serverRow').classList.remove('hidden');
     $('#serverLabel').textContent = S.info?.local ? 'This computer' : location.host;
     if (S.info?.audioSupported) {
@@ -90,7 +90,7 @@ const emitAck = (event, payload) => new Promise((resolve) => {
   }
 })();
 
-$('#changeServer').onclick = () => desktop?.openSettings();
+$('#changeServer').onclick = () => desktopApp?.openSettings();
 $('#newRoom').onclick = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   $('#room').value = [...crypto.getRandomValues(new Uint8Array(6))].map((b) => chars[b % chars.length]).join('');
@@ -257,7 +257,7 @@ $('#copyInvite').onclick = async () => {
   if (S.info?.local && S.info.addresses?.length) base = `http://${S.info.addresses[0]}:${S.info.port}`;
   const link = `${base}/?room=${encodeURIComponent(S.room)}`;
   try {
-    if (desktop) await desktop.copy(link);
+    if (desktopApp) await desktopApp.copy(link);
     else await navigator.clipboard.writeText(link);
     toast(`Invite copied: ${link}`);
   } catch {
@@ -273,7 +273,7 @@ $('#muteBtn').onclick = () => { S.muted = !S.muted; applyPauseMute(); announceSh
 
 async function openPicker(purpose) {
   S.pickFor = purpose;
-  if (!desktop) return shareSource(null); // browsers show their own picker
+  if (!desktopApp) return shareSource(null); // browsers show their own picker
   $('#goBtn').textContent = purpose === 'switch' ? 'Switch to this' : 'Share';
   $('#pickerModal').classList.remove('hidden');
   await refreshSources();
@@ -294,7 +294,7 @@ document.querySelectorAll('.tab').forEach((tab) => {
 async function refreshSources() {
   $('#refreshBtn').disabled = true;
   try {
-    S.sources = await desktop.listSources();
+    S.sources = await desktopApp.listSources();
     if (!S.sources.some((s) => s.id === S.selectedId)) S.selectedId = null;
   } catch (e) {
     toast('Could not list screens: ' + e.message);
@@ -327,9 +327,9 @@ function renderSources() {
 async function capture(sourceId) {
   const q = quality();
   let wantAudio = true; // browsers: Chrome/Edge show a "share audio" checkbox
-  if (desktop) {
+  if (desktopApp) {
     wantAudio = $('#audio').checked && !!S.info?.audioSupported;
-    await desktop.selectSource(sourceId, wantAudio);
+    await desktopApp.selectSource(sourceId, wantAudio);
   }
   const stream = await navigator.mediaDevices.getDisplayMedia({
     video: { frameRate: { ideal: q.fps } },
@@ -381,7 +381,7 @@ async function shareSource(sourceId) {
   if (switching) {
     await Promise.all([...S.outgoing.values()].map(attachTracks));
     old.getTracks().forEach((t) => { t.onended = null; t.stop(); });
-  } else if (desktop && $('#audio').checked && !audioTrack()) {
+  } else if (desktopApp && $('#audio').checked && !audioTrack()) {
     toast('No audio was captured — sharing video only.');
   }
   guardAgainstEcho();
@@ -422,7 +422,7 @@ async function applyStreamSettings() {
 // Computer audio ("loopback") records everything your PC plays — including the friends'
 // streams you're watching. Mute those so their sound isn't sent back to everyone.
 function sharingComputerAudio() {
-  return !!(desktop && audioTrack() && !S.muted);
+  return !!(desktopApp && audioTrack() && !S.muted);
 }
 function guardAgainstEcho() {
   if (!sharingComputerAudio()) return;
