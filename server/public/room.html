@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ScreenShare</title>
+<link rel="stylesheet" href="room.css" />
+</head>
+<body>
+
+<!-- ============ JOIN ============ -->
+<div id="joinView" class="join">
+  <form id="joinForm" class="card">
+    <h1>🖥️ ScreenShare</h1>
+    <p class="sub">Join a room to share your screen and watch your friends'.</p>
+
+    <label for="name">Your name</label>
+    <input id="name" maxlength="32" placeholder="Name" required />
+
+    <label for="room">Room code</label>
+    <div class="row">
+      <input id="room" class="mono" maxlength="32" placeholder="ABC123" required />
+      <button type="button" id="newRoom" class="btn secondary">New</button>
+    </div>
+
+    <label for="password">Password <span class="muted">(optional)</span></label>
+    <input id="password" type="password" maxlength="64" placeholder="Set one when creating a room" />
+
+    <p id="joinError" class="error hidden"></p>
+    <button class="btn primary big">Join room</button>
+
+    <div id="serverRow" class="server-row hidden">
+      <span>Server: <b id="serverLabel"></b></span>
+      <button type="button" id="changeServer" class="link">Change</button>
+    </div>
+  </form>
+</div>
+
+<!-- ============ ROOM ============ -->
+<div id="roomView" class="room hidden">
+  <header class="topbar">
+    <span class="brand">🖥️</span>
+    <span>Room <b id="roomCode" class="mono"></b></span>
+    <button id="copyInvite" class="btn secondary small">Copy invite</button>
+    <span id="myStats" class="stats"></span>
+  </header>
+
+  <div class="room-body">
+    <main class="stage-wrap">
+      <div id="stage" class="stage"></div>
+      <div id="emptyStage" class="empty-stage">
+        <div>
+          <div class="empty-icon">🖥️</div>
+          <p>No one is sharing yet.</p>
+          <p class="muted">Click <b>Share screen</b> below to start.</p>
+        </div>
+      </div>
+    </main>
+
+    <aside class="side">
+      <section>
+        <h3>In the room <span id="memberCount" class="count">0</span></h3>
+        <ul id="memberList" class="member-list"></ul>
+      </section>
+      <section class="chat">
+        <h3>Chat</h3>
+        <div id="messages" class="messages"></div>
+        <form id="chatForm" class="row">
+          <input id="chatInput" maxlength="500" placeholder="Message the room…" autocomplete="off" />
+          <button class="btn primary small">Send</button>
+        </form>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="controls">
+    <div class="group">
+      <button id="shareBtn" class="btn primary">Share screen</button>
+      <button id="changeBtn" class="btn secondary hidden">Change source</button>
+      <button id="pauseBtn" class="btn secondary hidden">Pause</button>
+      <button id="muteBtn" class="btn secondary hidden">Mute my audio</button>
+    </div>
+    <div class="group">
+      <select id="quality" title="Quality of your stream"></select>
+      <select id="mode" title="What you're sharing">
+        <option value="motion">Motion (games, video)</option>
+        <option value="detail">Detail (text, code)</option>
+      </select>
+      <label class="check" title="Start watching new streams automatically">
+        <input id="autoWatch" type="checkbox" checked /> Auto-watch
+      </label>
+    </div>
+    <button id="leaveBtn" class="btn danger">Leave</button>
+  </footer>
+</div>
+
+<!-- ============ SOURCE PICKER (desktop app) ============ -->
+<div id="pickerModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="picker-head">
+      <div class="tabs">
+        <button class="tab active" data-tab="screen">Screens</button>
+        <button class="tab" data-tab="window">Windows &amp; games</button>
+      </div>
+      <button id="refreshBtn" class="btn secondary small">Refresh</button>
+    </div>
+    <div id="sourceGrid" class="grid"></div>
+    <div class="picker-foot">
+      <div>
+        <label class="check"><input id="audio" type="checkbox" checked /> Share computer audio</label>
+        <p id="audioNote" class="note"></p>
+        <p class="note">Game shows black? Use <b>borderless/windowed</b> mode or share the whole <b>screen</b>.</p>
+      </div>
+      <div class="actions">
+        <button id="cancelPick" class="btn secondary">Cancel</button>
+        <button id="goBtn" class="btn primary" disabled>Share</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="room.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "name": "screenshare",
+  "productName": "ScreenShare",
+  "version": "3.0.0",
+  "description": "Discord-style screen sharing rooms (Electron + WebRTC)",
+  "main": "main.js",
+  "author": "Gustavo",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "server": "node server/server.js",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
+    "dist:mac": "electron-builder --mac"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.gustavo.screenshare",
+    "productName": "ScreenShare",
+    "files": [
+      "main.js",
+      "preload.js",
+      "setup/**",
+      "server/server.js",
+      "server/public/**"
+    ],
+    "win": { "target": ["nsis", "portable"] },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "linux": { "target": ["AppImage", "deb"], "category": "Network" },
+    "mac": { "target": "dmg", "category": "public.app-category.utilities" }
+  }
+}

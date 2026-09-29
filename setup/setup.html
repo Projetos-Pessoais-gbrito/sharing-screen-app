@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>ScreenShare — Server</title>
+<style>
+  :root { --bg:#1e1f22; --panel:#2b2d31; --line:#3f4147; --text:#f2f3f5; --muted:#b5bac1; --faint:#80848e; --accent:#5865f2; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font: 14px/1.45 system-ui, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); display: grid; place-items: center; padding: 16px; }
+  .card { width: 100%; max-width: 480px; background: var(--panel); border-radius: 12px; padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+  h1 { margin: 0; font-size: 22px; }
+  p { margin: 0; color: var(--muted); }
+  .option { display: flex; gap: 12px; padding: 14px; border: 2px solid var(--line); border-radius: 10px; cursor: pointer; }
+  .option:has(input:checked) { border-color: var(--accent); }
+  .option input { accent-color: var(--accent); margin-top: 3px; }
+  .option b { display: block; margin-bottom: 2px; }
+  .option small { color: var(--faint); }
+  input[type=url] { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 10px; font: inherit; margin-top: 10px; }
+  input[type=url]:disabled { opacity: .5; }
+  button { border: 0; border-radius: 6px; padding: 11px; font: inherit; font-weight: 600; color: #fff; background: var(--accent); cursor: pointer; }
+  .error { color: #f38b8e; background: rgba(218,55,60,.12); padding: 10px; border-radius: 6px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<form id="form" class="card">
+  <h1>🖥️ ScreenShare</h1>
+  <p>Choose where your rooms live. Everyone in a room must use the same server.</p>
+  <p id="error" class="error hidden"></p>
+
+  <label class="option">
+    <input type="radio" name="mode" value="remote" checked />
+    <span>
+      <b>Online server (recommended)</b>
+      <small>Friends anywhere in the world can join. Paste the address of your deployed server.</small>
+      <input id="url" type="url" placeholder="https://your-screenshare.onrender.com" />
+    </span>
+  </label>
+
+  <label class="option">
+    <input type="radio" name="mode" value="local" />
+    <span>
+      <b>This computer</b>
+      <small>For testing, or friends on the same Wi-Fi. Other people set their server to this computer's address.</small>
+    </span>
+  </label>
+
+  <button>Continue</button>
+</form>
+
+<script>
+const form = document.getElementById('form');
+const url = document.getElementById('url');
+const errorEl = document.getElementById('error');
+
+function showError(text) {
+  errorEl.textContent = text;
+  errorEl.classList.toggle('hidden', !text);
+}
+
+const params = new URLSearchParams(location.search);
+if (params.get('error')) showError(params.get('error'));
+
+function syncMode() {
+  url.disabled = form.mode.value !== 'remote';
+}
+form.addEventListener('change', syncMode);
+
+window.desktop?.getSettings().then((s) => {
+  if (!s) return;
+  form.mode.value = s.mode;
+  if (s.serverUrl) url.value = s.serverUrl;
+  syncMode();
+});
+
+form.onsubmit = async (e) => {
+  e.preventDefault();
+  if (!window.desktop) return showError('Open this inside the ScreenShare app.');
+  const mode = form.mode.value;
+  if (mode === 'remote' && !url.value.trim()) return showError('Paste your server address first.');
+  const res = await window.desktop.saveSettings({ mode, serverUrl: url.value });
+  if (!res?.ok) showError(res?.error || 'Could not save');
+};
+</script>
+</body>
+</html>
